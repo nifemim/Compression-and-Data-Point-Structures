@@ -15,6 +15,7 @@ def image_moment(image_dict, i, j):
 def area(image_dict):
   return naive_image_moment(image_dict, 0, 0)
 
+
 def centre_of_mass(image_dict):
   area = area(image_dict)
   x_centroid = image_moment(image_dict, 1, 0)/area
@@ -22,23 +23,30 @@ def centre_of_mass(image_dict):
 
   return (x_centroid,y_centroid)
 
+def center_image(image_dict):
+  centered_points = {}
+  x_centroid = centre_of_mass(image_dict)[0]
+  y_centroid = centre_of_mass(image_dict)[1]
+  for point in image_dict.keys():
+    x = point[0]
+    y = point[1]
+    centered_points[x - x_centroid, y - y_centroid] = image_dict[point]
+
+  return centered_points
+
 def axes_of_orientation(image_dict):
   x_centroid = centre_of_mass(image_dict)[0]
   y_centroid = centre_of_mass(image_dict)[1]
 
-  centered_points = {}
-  for point in image_dict.keys():
-    x = point[0]
-    y = point[1]
-    centered_points[x - x_centroid, y - y_centroid] = image_list_of_lists[y][x]
+  centered_points = center_image(image_dict)
 
-  # computing second moments on centered points
-  second_moment_a = image_moment(centered_points, 2, 0)
-  second_moment_b = image_moment(centered_points, 1, 1)
-  second_moment_c = image_moment(centered_points, 0, 2)
+  # computing second central moments
+  seconda = image_moment(centered_points, 2, 0)
+  secondb = image_moment(centered_points, 1, 1)
+  secondc = image_moment(centered_points, 0, 2)
 
-  sin_2_theta_1 = second_moment_b / sqrt(pow(second_moment_b, 2) + pow(second_moment_a - second_moment_c,2))
-  sin_2_theta_2 = -second_moment_b / sqrt(pow(second_moment_b, 2) + pow(second_moment_a - second_moment_c,2))
+  sin_2_theta_1 = secondb / sqrt(pow(secondb, 2) + pow(seconda - secondc,2))
+  sin_2_theta_2 = -secondb / sqrt(pow(secondb, 2) + pow(seconda - secondc,2))
 
   # the positive solution minimizes the integral, the negative solution maximizes the integral
   # this integral is (r**2)I(x,y) where r is the perp. distance from (x,y) to the line
@@ -46,7 +54,7 @@ def axes_of_orientation(image_dict):
   positive_2_theta_solution = max(sin_2_theta_1, sin_2_theta_2)
 
   # we are trying to minimize the integral if we want to find the axis of orientation.
-  # why? because the closer the points are to the line, the more likely it is that this line
+  # the closer the points are to the line, the more likely it is that this line
   # is the axis of orientation, thus the smaller the value of r, and the smaller the value of
   # the integral.
 
@@ -78,3 +86,56 @@ def axes_of_orientation(image_dict):
       second_axis_line.append((x_prime + x_centroid, y_prime + y_centroid))
   
   return (first_axis_line, second_axis_line)
+
+  """ In this function, I calculate the standard deviation of foreground/background values in the binary image. This standard deviation is returned as a tuple
+  OUTPUT: (stdx, stdy) where stdx is the standard deviation in the x axis, and stdy is the standard deviation in the y axis.
+  """
+def standard_deviation(image_dict):
+  # Finding the area and centroids
+  area = area(image_dict)
+  x_centroid = centre_of_mass(image_dict)[0]
+  y_centroid = centre_of_mass(image_dict)[1]
+  # Centering the image
+  centered_points = center_image(image_dict)
+  # Finding the variance divided by the area
+  varx = image_moment(centered_points, 2, 0)/area
+  vary = image_moment(centered_points, 0, 2)/area
+  # The standard deviation is the square root of the variance
+  stdx = sqrt(varx)
+  stdy = sqrt(vary)
+
+  return (stdx, stdy)
+
+""" Here, I find the skewness of the image using third central image moment.
+OUTPUT: (skewx, skewy) where skewx is the skewness in the x direction and skewy is the skewness in the y direction.
+"""
+def skewness(image_dict):
+  # As always, we will need the area
+  area = area(image_dict)
+  # Finding the standard deviation
+  stdx = standard_deviation(image_dict)[0]
+  stdy = standard_deviation(image_dict)[1]
+  centered_points = center_image(image_dict)
+  # Finding the third central image moment divided by area
+  thirdx = image_moment(centered_points, 3, 0)/area
+  thirdy = image_moment(centered_points, 0, 3)/area
+  # Skewness is this third central moment divided by standard devation cubed
+  skewx = thirdx/pow(stdx,3)
+  skewy = thirdy/pow(stdy,3)
+
+  return (skewx, skewy)
+
+def kurtosis(image_dict):
+  # We find the area, standard deviation and centered image
+  area = area(image_dict)
+  stdx = standard_deviation(image_dict)[0]
+  stdy = standard_deviation(image_dict)[1]
+  centered_points = center_image(image_dict)
+  # Finding the fourth central moment divided by area
+  fourthx = image_moment(centered_points, 4, 0)/area
+  fourthy = image_moment(centered_points, 0, 4)/area
+  # Kurtosis is the fourth central moment divided by standard deviation raised to four
+  kurtx = fourthx/pow(stdx,4)
+  kurty = fourthy/pow(stdy,4)
+
+  return (kurtx, kurty)
