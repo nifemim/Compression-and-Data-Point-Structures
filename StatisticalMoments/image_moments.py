@@ -1,84 +1,80 @@
-import png
+from math import pow
+from math import sqrt
+from math import sin
+from math import cos
 
-def image_moment(image_list_of_lists, i, j):
-    moment = 0
-    for x in range(len(image_list_of_lists[0])):
-        for y in range(len(image_list_of_lists)):
-            moment = moment + ((x**i)*(y**j)*image_list_of_lists[y][x])
-    return moment
+def image_moment(image_dict, i, j):
+  moment = 0
+  for point in image_dict.keys():
+    x = point[0]
+    y = point[1]
+    moment = moment + (pow(x,i)*pow(y,j)*image_dict[point])
+  
+  return moment
 
-def area(image_list_of_lists):
-    return naive_image_moment(image_list_of_lists, 0, 0)
+def area(image_dict):
+  return naive_image_moment(image_dict, 0, 0)
 
-def centre_of_mass(image_list_of_lists):
-    area = area(image_list_of_lists)
-    x_centroid = image_moment(image_list_of_lists, 1, 0)/area
-    y_centroid = image_moment(image_list_of_lists, 0, 1)/area
+def centre_of_mass(image_dict):
+  area = area(image_dict)
+  x_centroid = image_moment(image_dict, 1, 0)/area
+  y_centroid = image_moment(image_dict, 0, 1)/area
 
-    return (x_centroid,y_centroid)
+  return (x_centroid,y_centroid)
 
-def axis_of_orientation(image_list_of_lists):
-    second_moment_a = image_moment(image_list_of_lists,2,0)
-    second_moment_b = image_moment(image_list_of_lists,1,1)
-    second_moment_c = image_moment(image_list_of_lists,0,2)
+def axes_of_orientation(image_dict):
+  x_centroid = centre_of_mass(image_dict)[0]
+  y_centroid = centre_of_mass(image_dict)[1]
 
-    sin_2_theta_1 = second_moment_b/math.sqrt((second_moment_b**2)+((second_moment_a-second_moment_c)**2))
-    sin_2_theta_2 = -second_moment_b/math.sqrt((second_moment_b**2)+((second_moment_a-second_moment_c)**2))
+  centered_points = {}
+  for point in image_dict.keys():
+    x = point[0]
+    y = point[1]
+    centered_points[x - x_centroid, y - y_centroid] = image_list_of_lists[y][x]
 
-    # the positive solution minimizes the integral, the negative solution maximizes the integral
-    # this integral is (r**2)I(x,y) where r is the perp. distance from (x,y) to the line
-    negative_theta_solution = min(sin_2_theta_1, sin_2_theta_2)
-    positive_theta_solution = max(sin_2_theta_1, sin_2_theta_2)
+  # computing second moments on centered points
+  second_moment_a = image_moment(centered_points, 2, 0)
+  second_moment_b = image_moment(centered_points, 1, 1)
+  second_moment_c = image_moment(centered_points, 0, 2)
 
-    # we are trying to minimize the integral if we want to find the axis of orientation.
-    # why? because the closer the points are to the line, the more likely it is that this line
-    # is the axis of orientation, thus the smaller the value of r, and the smaller the value of
-    # the integral.
+  sin_2_theta_1 = second_moment_b / sqrt(pow(second_moment_b, 2) + pow(second_moment_a - second_moment_c,2))
+  sin_2_theta_2 = -second_moment_b / sqrt(pow(second_moment_b, 2) + pow(second_moment_a - second_moment_c,2))
 
-    # Thus, we are concerned with the positive solution for theta.
-    # theta is used to parametrize the line using:
-    # x_prime*sin(theta) - y_prime*cos(theta) = 0
-    # where x_prime = x - x_centroid, and y_prime = y - y-centroid
+  # the positive solution minimizes the integral, the negative solution maximizes the integral
+  # this integral is (r**2)I(x,y) where r is the perp. distance from (x,y) to the line
+  negative_2_theta_solution = min(sin_2_theta_1, sin_2_theta_2)
+  positive_2_theta_solution = max(sin_2_theta_1, sin_2_theta_2)
 
-    # now we can return the line as a vector:
-    x_centroid = centre_of_mass(image_list_of_lists)[0]
-    y_centroid = centre_of_mass(image_list_of_lists)[1]
-    parametrized_line = []
-    for x in range(len(image_list_of_lists[0])):
-        for y in range(len(image_list_of_lists)):
-            x_prime = x - x_centroid
-            y_prime = y - y_centroid
-            parametrized_test = (x_prime*math.sin(negative_theta_solution)) - (y_prime*math.cos(negative_theta_solution))
-            if(parametrized_test` == 0):
-                parametrized_line.append(x,y)
+  # we are trying to minimize the integral if we want to find the axis of orientation.
+  # why? because the closer the points are to the line, the more likely it is that this line
+  # is the axis of orientation, thus the smaller the value of r, and the smaller the value of
+  # the integral.
 
-    return parametrized_line
+  # However, to span the entire image, we need two lines, theta (the line parametrizing the axis of orientation) and orth_theta
+  # (the theta value giving a line orthogonal to the principal axis of orientation)
 
+  theta = positive_2_theta_solution / 2
+  orth_theta = negative_2_theta_solution / 2
+  # Thus, we are concerned with the positive solution for theta and the negative value for orth_theta.
+  # theta is used to parametrize the line using:
+  # x_prime*sin(theta) - y_prime*cos(theta) = 0
+  # where x_prime = x - x_centroid, and y_prime = y - y-centroid
+  # Then, we do the same but with orth_theta, giving:
+  # x_prime*sin(orth_theta) - y_prime*cos(orth_theta) = 0
 
-    
-
-# def file2image(path):
-#     (w, h, p, m) = png.Reader(filename = path).asRGBA()
-#     return [image._flat2boxed(r) for r in p]
-
-# def image2file(image, path):
-#     if image.isgray(image):
-#         img = image.gray2color(image)
-#     else:
-#         img = image
-#     with open(path, 'wb') as f:
-#         png.Writer(width=len(image[0]), height=len(image)).write(f, [_boxed2flat(r) for r in img])
-
-# def color2gray(image):
-#      """ Converts a color image to grayscale """
-#      # we use HDTV grayscale conversion as per https://en.wikipedia.org/wiki/Grayscale
-#      return [[int(0.2126*p[0] + 0.7152*p[1] + 0.0722*p[2]) for p in row] for row in image]
- 
-# def load_images(directoryname, num_faces = 2):
-#      return {i:color2gray(file2image(os.path.join(directoryname,"img%02d.png" % i))) for i in range(num_faces)}
-#      #loads the given number of image files from the classified files
-#      #returns a dict of face number to image files
-
-## Points for Meeting:
-## Currently working on hacking up a system to compute moments for binary images
-## Reading up on how to transform normal images into binary images by choosing threshold values for re-classification of pixel values
+  # now we can return the line as a vector:
+  first_axis_line = []
+  second_axis_line = []
+  for pair in centered_points:
+    x_prime = pair[0]
+    y_prime = pair[1]
+    on_first_axis_test = (x_prime * sin(theta)) - (y_prime * cos(theta))
+    on_second_axis_test = (x_prime * sin(orth_theta)) - (y_prime * cos(orth_theta))
+    if on_first_axis_test == 0:
+      # de-centering the points
+      first_axis_line.append((x_prime + x_centroid, y_prime + y_centroid))
+    if on_second_axis_test == 0:
+      # de-centering the points
+      second_axis_line.append((x_prime + x_centroid, y_prime + y_centroid))
+  
+  return (first_axis_line, second_axis_line)
