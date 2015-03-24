@@ -3,6 +3,9 @@ from math import sqrt
 from math import sin
 from math import cos
 
+""" This method uses summations to find the moment of an image of degree (i, j)
+OUTPUT: moment
+"""
 def image_moment(image_dict, i, j):
   moment = 0
   for point in image_dict.keys():
@@ -12,10 +15,15 @@ def image_moment(image_dict, i, j):
   
   return moment
 
+""" This method uses the 0'th moment to find the area of the foreground point in an image
+OUTPUT: the area of the image
+"""
 def area(image_dict):
   return naive_image_moment(image_dict, 0, 0)
 
-
+""" This method uses the first moment and area to find the centroids of an image.
+OUTPUT: (x_centroid,y_centroid) - the x and y coordinates of the 'centre' of an image
+"""
 def centre_of_mass(image_dict):
   area = area(image_dict)
   x_centroid = image_moment(image_dict, 1, 0)/area
@@ -23,6 +31,9 @@ def centre_of_mass(image_dict):
 
   return (x_centroid,y_centroid)
 
+""" This method centers the points of an image
+OUTPUT: centered_points - a dictionary of (x,y) coordinates mapped onto binary image values (foreground or background)
+"""
 def center_image(image_dict):
   centered_points = {}
   x_centroid = centre_of_mass(image_dict)[0]
@@ -34,6 +45,9 @@ def center_image(image_dict):
 
   return centered_points
 
+""" This method finds the axes of orientation of an image.
+OUTPUT: (first_axis_line, second_axis_line) where first_axis_line is the principal axis and second_axis_line is the axis perpendicular to that.
+"""
 def axes_of_orientation(image_dict):
   x_centroid = centre_of_mass(image_dict)[0]
   y_centroid = centre_of_mass(image_dict)[1]
@@ -58,7 +72,7 @@ def axes_of_orientation(image_dict):
   # is the axis of orientation, thus the smaller the value of r, and the smaller the value of
   # the integral.
 
-  # However, to span the entire image, we need two lines, theta (the line parametrizing the axis of orientation) and orth_theta
+  # However, to span the entire image, we need two angles, theta (the line parametrizing the axis of orientation) and orth_theta
   # (the theta value giving a line orthogonal to the principal axis of orientation)
 
   theta = positive_2_theta_solution / 2
@@ -67,7 +81,7 @@ def axes_of_orientation(image_dict):
   # theta is used to parametrize the line using:
   # x_prime*sin(theta) - y_prime*cos(theta) = 0
   # where x_prime = x - x_centroid, and y_prime = y - y-centroid
-  # Then, we do the same but with orth_theta, giving:
+  # Then, we do the same but with orth_theta, solving for:
   # x_prime*sin(orth_theta) - y_prime*cos(orth_theta) = 0
 
   # now we can return the line as a vector:
@@ -125,6 +139,9 @@ def skewness(image_dict):
 
   return (skewx, skewy)
 
+""" Here, I find the kurtosis of the image using fourth central image moment.
+OUTPUT: (kurtx, kurty) where kurtx is the kurtosis in the x direction and kurty is the kurtosis in the y direction.
+"""
 def kurtosis(image_dict):
   # We find the area, standard deviation and centered image
   area = area(image_dict)
