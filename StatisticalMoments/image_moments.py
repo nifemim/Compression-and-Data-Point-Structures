@@ -19,15 +19,15 @@ def image_moment(image_dict, i, j):
 OUTPUT: the area of the image
 """
 def area(image_dict):
-  return naive_image_moment(image_dict, 0, 0)
+  return image_moment(image_dict, 0, 0)
 
 """ This method uses the first moment and area to find the centroids of an image.
 OUTPUT: (x_centroid,y_centroid) - the x and y coordinates of the 'centre' of an image
 """
 def centre_of_mass(image_dict):
-  area = area(image_dict)
-  x_centroid = image_moment(image_dict, 1, 0)/area
-  y_centroid = image_moment(image_dict, 0, 1)/area
+  img_area = area(image_dict)
+  x_centroid = image_moment(image_dict, 1, 0)/img_area
+  y_centroid = image_moment(image_dict, 0, 1)/img_area
 
   return (x_centroid,y_centroid)
 
@@ -106,14 +106,14 @@ def axes_of_orientation(image_dict):
   """
 def standard_deviation(image_dict):
   # Finding the area and centroids
-  area = area(image_dict)
+  img_area = area(image_dict)
   x_centroid = centre_of_mass(image_dict)[0]
   y_centroid = centre_of_mass(image_dict)[1]
   # Centering the image
   centered_points = center_image(image_dict)
   # Finding the variance divided by the area
-  varx = image_moment(centered_points, 2, 0)/area
-  vary = image_moment(centered_points, 0, 2)/area
+  varx = image_moment(centered_points, 2, 0)/img_area
+  vary = image_moment(centered_points, 0, 2)/img_area
   # The standard deviation is the square root of the variance
   stdx = sqrt(varx)
   stdy = sqrt(vary)
@@ -125,17 +125,25 @@ OUTPUT: (skewx, skewy) where skewx is the skewness in the x direction and skewy 
 """
 def skewness(image_dict):
   # As always, we will need the area
-  area = area(image_dict)
+  img_area = area(image_dict)
   # Finding the standard deviation
   stdx = standard_deviation(image_dict)[0]
   stdy = standard_deviation(image_dict)[1]
   centered_points = center_image(image_dict)
   # Finding the third central image moment divided by area
-  thirdx = image_moment(centered_points, 3, 0)/area
-  thirdy = image_moment(centered_points, 0, 3)/area
+  thirdx = image_moment(centered_points, 3, 0)/img_area
+  thirdy = image_moment(centered_points, 0, 3)/img_area
   # Skewness is this third central moment divided by standard devation cubed
-  skewx = thirdx/pow(stdx,3)
-  skewy = thirdy/pow(stdy,3)
+  # We have to check whether there is any standard deviation in either direction.
+  # If not, then we know that the image is symmetrical.
+  if stdx == 0:
+    skewx = 0
+  else:
+    skewx = thirdx/pow(stdx,3)
+  if stdy == 0:
+    skewy = 0
+  else:
+    skewy = thirdy/pow(stdy,3)
 
   return (skewx, skewy)
 
@@ -144,15 +152,23 @@ OUTPUT: (kurtx, kurty) where kurtx is the kurtosis in the x direction and kurty 
 """
 def kurtosis(image_dict):
   # We find the area, standard deviation and centered image
-  area = area(image_dict)
+  img_area = area(image_dict)
   stdx = standard_deviation(image_dict)[0]
   stdy = standard_deviation(image_dict)[1]
   centered_points = center_image(image_dict)
   # Finding the fourth central moment divided by area
-  fourthx = image_moment(centered_points, 4, 0)/area
-  fourthy = image_moment(centered_points, 0, 4)/area
+  fourthx = image_moment(centered_points, 4, 0)/img_area
+  fourthy = image_moment(centered_points, 0, 4)/img_area
   # Kurtosis is the fourth central moment divided by standard deviation raised to four
-  kurtx = fourthx/pow(stdx,4)
-  kurty = fourthy/pow(stdy,4)
+  # We have to check whether there is any standard deviation in either direction.
+  # If not, then the image is symmetrical.
+  if stdx == 0:
+    kurtx = 0
+  else:
+    kurtx = fourthx/pow(stdx,4)
+  if stdy == 0:
+    kurty = 0
+  else:
+    kurty = fourthy/pow(stdy,4)
 
   return (kurtx, kurty)
