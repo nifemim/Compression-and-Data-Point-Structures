@@ -21,6 +21,18 @@ OUTPUT: the area of the image
 def area(image_dict):
   return image_moment(image_dict, 0, 0)
 
+def reconstruct(image_dict, p, q):
+  toReturn = {}
+  exes = [-1, 0, 1]
+  ys = [-1, 0, 1]
+  for x in exes:
+    for y in ys:
+      toReturn[x, y] = 0
+      for i in range(p):
+        for j in range(q):
+          toReturn[x, y] += (image_moment(image_dict, i, j)*pow(x, i)*pow(y, j))
+  return toReturn
+
 """ This method uses the first moment and area to find the centroids of an image.
 OUTPUT: (x_centroid,y_centroid) - the x and y coordinates of the 'centre' of an image
 """
