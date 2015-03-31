@@ -7,6 +7,22 @@ function newOctree(origin, halfDimension){
 
   return octree;
 }
+
+function vector3(x, y, z){
+  var vector3 = new Object();
+  vector3.x = x;
+  vector3.y = y;
+  vector3.z = z;
+
+  return vector3;
+}
+function newOctreePoint(point){
+  var octreePoint = new Object();
+  octreePoint.position = point;
+
+  return octreePoint;
+}
+
 function findOctant(octree, point){
   int octant = 0;
   if (point.x >= octree.origin.x) {
@@ -29,7 +45,7 @@ function isLeaf(octree) {
 }
 
 function insert(octree, point) {
-  if (isLeaf()) {
+  if (isLeaf(octree)) {
     if (octree.dataPoint == null) {
       octree.dataPoint = point;
       return;
@@ -62,17 +78,17 @@ function findInBoundedBox(octree, min, max, results){
       if (p.x < min.x || p.y < min.y || p.z < min.z) {
         return;
       }
-      results.pushBack(octree.dataPoint);
+      results.push(octree.dataPoint);
     }
   } else {
     for (var i = 0; i < 8; i++) {
       cmax = octree.children[i].origin + octree.children[i].halfDimension;
       cmin = octree.children[i].origin - octree.children[i].halfDimension;
 
-      if (cmax.x < min.x || c) {
+      if (cmax.x < min.x || cmax.y < min.y || cmax.z < min.z) {
         continue;
       }
-      if () {
+      if (cmin.x > max.x || cmin.y > max.y || cmin.z > max.z) {
         continue;
       }
       findInBoundedBox(octree.children[i], min, max, results);
