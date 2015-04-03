@@ -200,6 +200,7 @@ function octarySearch(octree, location) {
   if(octree.dataPoint != null && vector3Equals(octree.dataPoint.position, location)) {
     return octree;
   }
+  
   if(isLeaf(octree)){
     return "Unable to find location within tree.";
   }
