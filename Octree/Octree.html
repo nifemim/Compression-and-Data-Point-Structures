@@ -1,0 +1,48 @@
+<html>
+<body>
+
+<script src="Octree.js"></script>
+
+<script>
+
+function randomVector(min, max) {
+  var rand1 = Math.random() * (max - min) + min;
+  var rand2 = Math.random() * (max - min) + min;
+  var rand3 = Math.random() * (max - min) + min;
+  return vector3(rand1, rand2, rand3);
+}
+
+function testOctree1() {
+  var origin = vector3(0,0,0);
+  var halfDim = vector3(1,1,1);
+  var rootOctree = newOctree(origin, halfDim);
+  var vecs = [];
+  vecs.push(randomVector(-1, 1));
+  vecs.push(randomVector(-1, 1));
+  vecs.push(randomVector(-1, 1));
+  var points = [];
+  for (var i in vecs) {
+    var point = newOctreePoint(vecs[i]);
+    points.push(point);
+  }
+  for (var j in points) {
+    insert(rootOctree, points[j]);
+  }
+
+  // First, we print out the octree for inspection
+  console.log(rootOctree);
+
+  // Next, we text to see if the bounded box search sensible results
+  var allPoints = [];
+  findInBoundedBox(rootOctree, vector3(-1, -1, 0), vector3(1, 1, 1), allPoints);
+  console.log(allPoints);
+
+  // Now, we test to see if search works
+  console.log(octarySearch(rootOctree, vecs[0]));
+}
+
+testOctree1();
+
+</script>
+</body>
+</html>
