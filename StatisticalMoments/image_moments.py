@@ -21,6 +21,9 @@ OUTPUT: the area of the image
 def area(image_dict):
   return image_moment(image_dict, 0, 0)
 
+""" This method uses the coefficients up to N = p+q order to attempt to reconstruct the image.
+OUTPUT: toReturn - a dictionary mapping locations onto values
+"""
 def reconstruct(image_dict, p, q):
   toReturn = {}
   exes = [-1, 0, 1]
